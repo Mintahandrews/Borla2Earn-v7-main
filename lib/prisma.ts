@@ -11,7 +11,6 @@ declare global {
 const createPrismaClient = () => {
   console.log('Creating new Prisma client instance...');
   
-  // Configure the Prisma client with connection pooling
   const prisma = new PrismaClient({
     datasources: {
       db: {
@@ -36,7 +35,7 @@ const createPrismaClient = () => {
 };
 
 // Ensure we only create one instance of Prisma Client in development
-const prisma = global.prisma || createPrismaClient();
+export const prisma = global.prisma || createPrismaClient();
 
 if (process.env.NODE_ENV !== 'production') {
   global.prisma = prisma;
@@ -59,32 +58,4 @@ process.on('beforeExit', cleanup);
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
-// Export the Prisma client and types
-export { prisma };
 export * from '@prisma/client';
-
-// Export a function to test the database connection
-export const testConnection = async () => {
-  try {
-    console.log('Testing database connection...');
-    await prisma.$connect();
-    const version = await prisma.$queryRaw`SELECT version()`;
-    const userCount = await prisma.user.count();
-    
-    return { 
-      success: true, 
-      version: version[0]?.version || 'Unknown',
-      userCount,
-      timestamp: new Date().toISOString()
-    };
-  } catch (error) {
-    console.error('Database connection test failed:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error',
-      timestamp: new Date().toISOString()
-    };
-  } finally {
-    await prisma.$disconnect().catch(console.error);
-  }
-};
