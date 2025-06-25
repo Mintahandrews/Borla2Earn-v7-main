@@ -19,9 +19,6 @@ export async function GET() {
       dbVersion: result[0]?.version || 'Unknown',
       timestamp: new Date().toISOString()
     });
-  } finally {
-    await prisma.$disconnect();
-  }
   } catch (error) {
     console.error('Database test failed:', error);
     return NextResponse.json(
@@ -32,5 +29,7 @@ export async function GET() {
       },
       { status: 500 }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
