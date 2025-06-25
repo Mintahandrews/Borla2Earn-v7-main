@@ -1,7 +1,11 @@
-import { prisma } from '@/lib/db';
+import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
+  const prisma = new PrismaClient({
+    log: ['error', 'warn'],
+  });
+
   try {
     // Test database connection by counting users with proper table name
     const userCount = await prisma.$queryRaw`SELECT COUNT(*)::int as count FROM "User"`;
@@ -15,6 +19,9 @@ export async function GET() {
       dbVersion: result[0]?.version || 'Unknown',
       timestamp: new Date().toISOString()
     });
+  } finally {
+    await prisma.$disconnect();
+  }
   } catch (error) {
     console.error('Database test failed:', error);
     return NextResponse.json(
